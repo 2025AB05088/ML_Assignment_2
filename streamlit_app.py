@@ -19,9 +19,6 @@ The models are trained on a local training set, and you can upload your own test
 # --- Configuration ---
 TRAIN_DATA_PATH = "train.csv"  # Path to the training dataset
 
-# --- Sidebar ---
-st.sidebar.header("Configuration")
-
 # 1. Load Training Data
 @st.cache_data
 def load_data(path):
@@ -35,16 +32,14 @@ if train_df is None:
     st.error(f"Training data not found at `{TRAIN_DATA_PATH}`. Please add the file to the directory.")
     st.stop()
 
-st.sidebar.success(f"Loaded Training Data: {train_df.shape[0]} rows, {train_df.shape[1]} columns")
+st.success(f"Loaded Training Data: {train_df.shape[0]} rows, {train_df.shape[1]} columns")
 
 # 2. Select Target Column
-target_col = st.sidebar.selectbox("Select Target Column", train_df.columns, index=len(train_df.columns)-1)
+target_col = st.selectbox("Select Target Column", train_df.columns, index=len(train_df.columns)-1)
 
 # Prepare Training Data
 X_train = train_df.drop(columns=[target_col])
 y_train = train_df[target_col]
-
-
 
 @st.cache_resource
 def train_models(X, y):
@@ -65,7 +60,7 @@ def train_models(X, y):
 
 with st.spinner("Training models on `train.csv`..."):
     trained_models = train_models(X_train, y_train)
-    st.sidebar.success("All models trained successfully!")
+    st.success("All models trained successfully!")
 
 # --- Main Area ---
 
