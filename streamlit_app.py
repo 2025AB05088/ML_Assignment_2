@@ -111,7 +111,7 @@ if test_file is not None:
                 except:
                     auc = "N/A"
 
-                st.markdown(f"### 📊 Results for **{selected_model_name}**")
+                st.markdown(f"### Results for **{selected_model_name}**")
                 st.markdown("---")
 
                 # Metrics Row
@@ -129,7 +129,6 @@ if test_file is not None:
                 st.markdown("---")
 
                 # Visualizations
-                # Visualizations
                 st.markdown("#### Confusion Matrix")
                 cm = confusion_matrix(y_test, y_pred)
                 fig, ax = plt.subplots(figsize=(6, 4))
@@ -141,13 +140,46 @@ if test_file is not None:
                 
                 st.markdown("---")
                 
-                st.markdown("#### Classification Report")
-                report_dict = classification_report(y_test, y_pred, output_dict=True)
-                report_df = pd.DataFrame(report_dict).transpose()
-                st.dataframe(
-                    report_df.style.format("{:.3f}").background_gradient(cmap='Blues', subset=['precision', 'recall', 'f1-score']),
-                    use_container_width=True
-                )
+                st.markdown("#### Model Comparison")
+                
+                comparison_results = []
+                for name, clf in trained_models.items():
+                    # Predict
+                    y_p = clf.predict(X_test)
+                    y_pb = clf.predict_proba(X_test)[:, 1] if hasattr(clf, "predict_proba") else None
+                    
+                    # Metrics
+                    a = accuracy_score(y_test, y_p)
+                    p = precision_score(y_test, y_p, average='weighted', zero_division=0)
+                    r = recall_score(y_test, y_p, average='weighted', zero_division=0)
+                    f = f1_score(y_test, y_p, average='weighted', zero_division=0)
+                    m = matthews_corrcoef(y_test, y_p)
+                    try:
+                        au = roc_auc_score(y_test, y_pb) if y_pb is not None else 0
+                    except:
+                        au = 0
+                    
+                    comparison_results.append({
+                        "Model": name,
+                        "Accuracy": a,
+                        "Precision": p,
+                        "Recall": r,
+                        "F1 Score": f,
+                        "MCC": m,
+                        "AUC": au
+                    })
+                
+                comparison_df = pd.DataFrame(comparison_results)
+                st.dataframe(comparison_df.style.format({
+                    "Accuracy": "{:.4f}",
+                    "Precision": "{:.4f}",
+                    "Recall": "{:.4f}",
+                    "F1 Score": "{:.4f}",
+                    "MCC": "{:.4f}",
+                    "AUC": "{:.4f}"
+                }), use_container_width=True)
+
+
 
     except Exception as e:
         st.error(f"Error processing test file: {e}")
