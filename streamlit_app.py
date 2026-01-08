@@ -8,9 +8,9 @@ import os
 from Models import logistic_regression, decision_tree, knn, naive_bayes, random_forest, xgboost_model
 
 # Set page config
-st.set_page_config(page_title="ML Assignment 2 - Classification App", layout="wide")
+st.set_page_config(page_title="Machine Learning Assignment 2 - Classification Models Comparison", layout="wide")
 
-st.title("Machine Learning Classification Assignment")
+st.title("Machine Learning Assignment 2 - Classification Models Comparison")
 st.markdown("""
 Welcome! This dashboard allows you to evaluate different machine learning models on the ABC dataset.
 The models are trained on a local training set, and you can upload your own test data to see how they perform.
@@ -44,19 +44,16 @@ target_col = st.sidebar.selectbox("Select Target Column", train_df.columns, inde
 X_train = train_df.drop(columns=[target_col])
 y_train = train_df[target_col]
 
-# 3. Model Training (Train ALL models)
-st.sidebar.subheader("Model Hyperparameters")
-n_neighbors = st.sidebar.slider("KNN: Neighbors (K)", 1, 20, 5)
-n_estimators_rf = st.sidebar.slider("Random Forest: Trees", 10, 200, 100)
+
 
 @st.cache_resource
-def train_models(X, y, k, n_est_rf):
+def train_models(X, y):
     models = {
         "Logistic Regression": logistic_regression.get_model(),
         "Decision Tree": decision_tree.get_model(),
-        "K-Nearest Neighbors": knn.get_model(n_neighbors=k),
+        "K-Nearest Neighbors": knn.get_model(n_neighbors=7),
         "Naive Bayes": naive_bayes.get_model(),
-        "Random Forest": random_forest.get_model(n_estimators=n_est_rf),
+        "Random Forest": random_forest.get_model(n_estimators=100),
         "XGBoost": xgboost_model.get_model()
     }
     
@@ -67,7 +64,7 @@ def train_models(X, y, k, n_est_rf):
     return trained_models
 
 with st.spinner("Training models on `train.csv`..."):
-    trained_models = train_models(X_train, y_train, n_neighbors, n_estimators_rf)
+    trained_models = train_models(X_train, y_train)
     st.sidebar.success("All models trained successfully!")
 
 # --- Main Area ---
@@ -114,28 +111,43 @@ if test_file is not None:
                 except:
                     auc = "N/A"
 
-                st.write(f"### Results for {selected_model_name}")
-                
-                col1, col2, col3, col4, col5, col6 = st.columns(6)
-                col1.metric("Accuracy", f"{acc:.4f}")
-                col2.metric("Precision", f"{prec:.4f}")
-                col3.metric("Recall", f"{rec:.4f}")
-                col4.metric("F1 Score", f"{f1:.4f}")
-                col5.metric("MCC", f"{mcc:.4f}")
-                col6.metric("AUC", f"{auc if isinstance(auc, str) else f'{auc:.4f}'}")
+                st.markdown(f"### 📊 Results for **{selected_model_name}**")
+                st.markdown("---")
 
-                col_cm, col_cr = st.columns(2)
+                # Metrics Row
+                st.markdown("#### Key Performance Indicators")
+                cols = st.columns(6)
+                metrics = [
+                    ("Accuracy", acc), ("Precision", prec), ("Recall", rec),
+                    ("F1 Score", f1), ("MCC", mcc), ("AUC", auc)
+                ]
                 
-                with col_cm:
-                    st.write("#### Confusion Matrix")
-                    cm = confusion_matrix(y_test, y_pred)
-                    fig, ax = plt.subplots()
-                    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax)
-                    st.pyplot(fig)
+                for col, (label, value) in zip(cols, metrics):
+                    val_str = f"{value:.4f}" if isinstance(value, (int, float)) else value
+                    col.metric(label, val_str)
                 
-                with col_cr:
-                    st.write("#### Classification Report")
-                    st.text(classification_report(y_test, y_pred))
+                st.markdown("---")
+
+                # Visualizations
+                # Visualizations
+                st.markdown("#### Confusion Matrix")
+                cm = confusion_matrix(y_test, y_pred)
+                fig, ax = plt.subplots(figsize=(6, 4))
+                sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax, cbar=False)
+                ax.set_xlabel('Predicted Label')
+                ax.set_ylabel('True Label')
+                plt.tight_layout()
+                st.pyplot(fig, use_container_width=False)
+                
+                st.markdown("---")
+                
+                st.markdown("#### Classification Report")
+                report_dict = classification_report(y_test, y_pred, output_dict=True)
+                report_df = pd.DataFrame(report_dict).transpose()
+                st.dataframe(
+                    report_df.style.format("{:.3f}").background_gradient(cmap='Blues', subset=['precision', 'recall', 'f1-score']),
+                    use_container_width=True
+                )
 
     except Exception as e:
         st.error(f"Error processing test file: {e}")
