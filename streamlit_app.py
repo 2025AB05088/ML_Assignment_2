@@ -35,6 +35,7 @@ if train_df is None:
 st.success(f"Loaded Training Data: {train_df.shape[0]} rows, {train_df.shape[1]} columns")
 
 # Prepare Training Data
+target_col = train_df.columns[-1]
 X_train = train_df.drop(columns=[target_col])
 y_train = train_df[target_col]
 
@@ -73,6 +74,7 @@ if test_file is not None:
         if target_col not in test_df.columns:
             st.error(f"Target column `{target_col}` not found in test data. Please ensure the test data has the same structure as training data.")
         else:
+            target_col = test_df.columns[-1]
             X_test = test_df.drop(columns=[target_col])
             y_test = test_df[target_col]
             
