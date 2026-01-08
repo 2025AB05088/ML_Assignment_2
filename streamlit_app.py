@@ -34,9 +34,6 @@ if train_df is None:
 
 st.success(f"Loaded Training Data: {train_df.shape[0]} rows, {train_df.shape[1]} columns")
 
-# 2. Select Target Column
-target_col = st.selectbox("Select Target Column", train_df.columns, index=len(train_df.columns)-1)
-
 # Prepare Training Data
 X_train = train_df.drop(columns=[target_col])
 y_train = train_df[target_col]
