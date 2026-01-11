@@ -12,12 +12,12 @@ st.set_page_config(page_title="Machine Learning Assignment 2 - Classification Mo
 
 st.title("Machine Learning Assignment 2 - Classification Models Comparison")
 st.markdown("""
-Welcome! This dashboard allows you to evaluate different machine learning models on the ABC dataset.
-The models are trained on a local training set, and you can upload your own test data to see how they perform.
+Welcome! This dashboard allows you to evaluate different machine learning models on the **Steel Plates Faults** dataset.
+The models are pre-trained on `steel_faults_train.csv` with optimized hyperparameters, and you can upload `steel_faults_test.csv` to see how they perform.
 """)
 
 # --- Configuration ---
-TRAIN_DATA_PATH = "train.csv"  # Path to the training dataset
+TRAIN_DATA_PATH = "steel_faults_train.csv"  # Path to the training dataset
 
 # 1. Load Training Data
 @st.cache_data
@@ -40,25 +40,33 @@ X_train = train_df.drop(columns=[target_col])
 y_train = train_df[target_col]
 
 @st.cache_resource
-def train_models(X, y):
-    models = {
-        "Logistic Regression": logistic_regression.get_model(),
-        "Decision Tree": decision_tree.get_model(),
-        "K-Nearest Neighbors": knn.get_model(n_neighbors=7),
-        "Naive Bayes": naive_bayes.get_model(),
-        "Random Forest": random_forest.get_model(n_estimators=100),
-        "XGBoost": xgboost_model.get_model()
+def load_models():
+    """Load pre-trained models from .pkl files"""
+    import pickle
+    
+    model_files = {
+        "Logistic Regression": "Models/logistic_regression_trained.pkl",
+        "Decision Tree": "Models/decision_tree_trained.pkl",
+        "K-Nearest Neighbors": "Models/knn_trained.pkl",
+        "Naive Bayes": "Models/naive_bayes_trained.pkl",
+        "Random Forest": "Models/random_forest_trained.pkl",
+        "XGBoost": "Models/xgboost_trained.pkl"
     }
     
-    trained_models = {}
-    for name, model in models.items():
-        model.fit(X, y)
-        trained_models[name] = model
-    return trained_models
+    loaded_models = {}
+    for name, pkl_path in model_files.items():
+        if not os.path.exists(pkl_path):
+            st.error(f"Model file not found: {pkl_path}. Please run train_models.py first.")
+            st.stop()
+        
+        with open(pkl_path, 'rb') as f:
+            loaded_models[name] = pickle.load(f)
+    
+    return loaded_models
 
-with st.spinner("Training models on `train.csv`..."):
-    trained_models = train_models(X_train, y_train)
-    st.success("All models trained successfully!")
+with st.spinner("Loading pre-trained models..."):
+    trained_models = load_models()
+    st.success("All pre-trained models loaded successfully!")
 
 # --- Main Area ---
 
@@ -178,5 +186,5 @@ if test_file is not None:
     except Exception as e:
         st.error(f"Error processing test file: {e}")
 else:
-    st.info("Please upload a CSV file to evaluate the models.")
+    st.info("Please upload a CSV file to evaluate the models. (Use the GitHub link to download the test dataset)")
 
