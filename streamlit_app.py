@@ -8,21 +8,55 @@ import os
 from Models import logistic_regression, decision_tree, knn, naive_bayes, random_forest, xgboost_model
 
 # Set page config
-st.set_page_config(
-    page_title="Steel Plates Fault Classification", 
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
+st.set_page_config(page_title="Machine Learning Assignment 2 - Classification Models Comparison", layout="wide")
 
-# Title with styling
-st.markdown("""<h1 style='text-align: center; color: #1f77b4;'>🔬 Steel Plates Fault Classification</h1>""", unsafe_allow_html=True)
-st.markdown("""<h3 style='text-align: center; color: #555;'>Machine Learning Models Comparison</h3>""", unsafe_allow_html=True)
+# Custom CSS for styling
 st.markdown("""
-<div style='background-color: #f0f2f6; padding: 20px; border-radius: 10px; margin-bottom: 20px;'>
-    <p style='font-size: 16px; color: #333;'>
-    👋 Welcome! This dashboard evaluates different machine learning models on the <b>Steel Plates Faults</b> dataset.
-    The models are pre-trained with optimized hyperparameters. Upload <code>steel_faults_test.csv</code> to see predictions and performance metrics.
-    </p>
+<style>
+    .main-title {
+        text-align: center;
+        color: #1f77b4;
+        font-size: 2.5em;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    .subtitle {
+        text-align: center;
+        color: #555;
+        font-size: 1.2em;
+        margin-bottom: 30px;
+    }
+    .info-box {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+        border-radius: 10px;
+        color: white;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .metric-card {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 4px solid #1f77b4;
+        margin: 10px 0;
+    }
+    .section-header {
+        color: #2c3e50;
+        border-bottom: 3px solid #3498db;
+        padding-bottom: 10px;
+        margin-top: 30px;
+        margin-bottom: 20px;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown('<p class="main-title">Steel Plates Fault Classification</p>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">Machine Learning Models Comparison Dashboard</p>', unsafe_allow_html=True)
+st.markdown("""
+<div class="info-box">
+    <strong>Welcome!</strong> This dashboard allows you to evaluate different machine learning models on the <strong>Steel Plates Faults</strong> dataset.
+    The models are pre-trained with optimized hyperparameters. Upload your test dataset to see predictions and performance metrics.
 </div>
 """, unsafe_allow_html=True)
 
@@ -42,7 +76,7 @@ if train_df is None:
     st.error(f"Training data not found at `{TRAIN_DATA_PATH}`. Please add the file to the directory.")
     st.stop()
 
-st.success(f"✅ Loaded Training Data: {train_df.shape[0]} rows, {train_df.shape[1]} columns")
+st.success(f"Loaded Training Data: {train_df.shape[0]} rows, {train_df.shape[1]} columns")
 
 # Prepare Training Data
 target_col = train_df.columns[-1]
@@ -76,18 +110,18 @@ def load_models():
 
 with st.spinner("Loading pre-trained models..."):
     trained_models = load_models()
-    st.success("✅ All pre-trained models loaded successfully!")
+    st.success("All pre-trained models loaded successfully!")
 
 # --- Main Area ---
 
-# 4. Upload Test Data
-st.markdown("""<h2 style='color: #e377c2;'>📤 Step 1: Upload Test Dataset</h2>""", unsafe_allow_html=True)
+# Upload Test Data
+st.markdown('<h2 class="section-header">Step 1: Upload Test Dataset</h2>', unsafe_allow_html=True)
 test_file = st.file_uploader("Upload your Test CSV file", type=["csv"])
 
 if test_file is not None:
     try:
         test_df = pd.read_csv(test_file)
-        st.write(f"✅ Test Data Loaded: {test_df.shape[0]} rows")
+        st.write(f"Test Data Loaded: {test_df.shape[0]} rows")
         
         if target_col not in test_df.columns:
             st.error(f"Target column `{target_col}` not found in test data. Please ensure the test data has the same structure as training data.")
@@ -100,8 +134,8 @@ if test_file is not None:
             if X_test.shape[1] != X_train.shape[1]:
                  st.warning(f"Feature mismatch! Train has {X_train.shape[1]} features, Test has {X_test.shape[1]}. Predictions might fail.")
 
-            # 5. Select Model for Evaluation
-            st.markdown("""<h2 style='color: #8c564b;'>🤖 Step 2: Select Model to Evaluate</h2>""", unsafe_allow_html=True)
+            # Select Model for Evaluation
+            st.markdown('<h2 class="section-header">Step 2: Select Model to Evaluate</h2>', unsafe_allow_html=True)
             selected_model_name = st.selectbox("Choose a model", list(trained_models.keys()))
             
             if selected_model_name:
@@ -127,15 +161,15 @@ if test_file is not None:
                 except:
                     auc = 0.0
 
-                st.markdown(f"""<h2 style='color: #1f77b4;'>📊 Results for <span style='color: #ff7f0e;'>{selected_model_name}</span></h2>""", unsafe_allow_html=True)
+                st.markdown(f'<h2 style="color: #2c3e50; border-left: 5px solid #3498db; padding-left: 15px; margin-top: 30px;">Results for {selected_model_name}</h2>', unsafe_allow_html=True)
                 st.markdown("---")
 
-                # Metrics Row with icons
-                st.markdown("""<h3 style='color: #2ca02c;'>📈 Key Performance Indicators</h3>""", unsafe_allow_html=True)
+                # Metrics Row
+                st.markdown('<h3 style="color: #16a085; margin-bottom: 20px;">Key Performance Indicators</h3>', unsafe_allow_html=True)
                 cols = st.columns(6)
                 metrics = [
-                    ("🎯 Accuracy", acc), ("✓ Precision", prec), ("↩ Recall", rec),
-                    ("⚖ F1 Score", f1), ("📉 MCC", mcc), ("📊 AUC", auc)
+                    ("Accuracy", acc), ("Precision", prec), ("Recall", rec),
+                    ("F1 Score", f1), ("MCC", mcc), ("AUC", auc)
                 ]
                 
                 for col, (label, value) in zip(cols, metrics):
@@ -145,20 +179,20 @@ if test_file is not None:
                 st.markdown("---")
 
                 # Visualizations
-                st.markdown("""<h3 style='color: #d62728;'>🔥 Confusion Matrix</h3>""", unsafe_allow_html=True)
+                st.markdown('<h3 style="color: #c0392b; margin-top: 30px; margin-bottom: 20px;">Confusion Matrix</h3>', unsafe_allow_html=True)
                 cm = confusion_matrix(y_test, y_pred)
-                fig, ax = plt.subplots(figsize=(8, 6))
-                sns.heatmap(cm, annot=True, fmt='d', cmap='RdYlGn_r', ax=ax, cbar=True, 
-                           linewidths=1, linecolor='white')
-                ax.set_xlabel('Predicted Label', fontsize=12, fontweight='bold')
-                ax.set_ylabel('True Label', fontsize=12, fontweight='bold')
-                ax.set_title(f'{selected_model_name} - Confusion Matrix', fontsize=14, fontweight='bold', pad=20)
+                fig, ax = plt.subplots(figsize=(10, 7))
+                sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax, cbar=True, 
+                           linewidths=0.5, linecolor='gray', cbar_kws={'label': 'Count'})
+                ax.set_xlabel('Predicted Label', fontsize=13, fontweight='bold', color='#2c3e50')
+                ax.set_ylabel('True Label', fontsize=13, fontweight='bold', color='#2c3e50')
+                ax.set_title(f'{selected_model_name} - Confusion Matrix', fontsize=15, fontweight='bold', pad=20, color='#34495e')
                 plt.tight_layout()
                 st.pyplot(fig, use_container_width=True)
                 
                 st.markdown("---")
                 
-                st.markdown("""<h3 style='color: #9467bd;'>🏆 Model Comparison Across All Algorithms</h3>""", unsafe_allow_html=True)
+                st.markdown('<h3 style="color: #8e44ad; margin-top: 30px; margin-bottom: 20px;">Model Comparison Across All Algorithms</h3>', unsafe_allow_html=True)
                 
                 comparison_results = []
                 for name, clf in trained_models.items():
@@ -205,11 +239,11 @@ if test_file is not None:
 
 
     except Exception as e:
-        st.error(f"❌ Error processing test file: {e}")
+        st.error(f"Error processing test file: {e}")
 else:
     st.markdown("""
-    <div style='background-color: #fff3cd; padding: 15px; border-left: 5px solid #ffc107; border-radius: 5px;'>
-        <p style='margin: 0; color: #856404;'><b>ℹ️ Info:</b> Please upload a CSV file to evaluate the models.</p>
+    <div style='background-color: #fff3cd; padding: 20px; border-left: 5px solid #ffc107; border-radius: 5px; margin-top: 20px;'>
+        <p style='margin: 0; color: #856404; font-size: 16px;'><strong>Info:</strong> Please upload a CSV file to evaluate the models.</p>
     </div>
     """, unsafe_allow_html=True)
 
