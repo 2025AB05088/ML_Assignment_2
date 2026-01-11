@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import accuracy_score, roc_auc_score, precision_score, recall_score, f1_score, matthews_corrcoef, confusion_matrix, classification_report
 import os
+import plotly.express as px
+import plotly.graph_objects as go
 from Models import logistic_regression, decision_tree, knn, naive_bayes, random_forest, xgboost_model
 
 # Set page config
@@ -16,15 +18,15 @@ st.markdown("""
     .main-title {
         text-align: center;
         color: #1f77b4;
-        font-size: 2.5em;
+        font-size: 3.5em;
         font-weight: bold;
-        margin-bottom: 10px;
+        margin-bottom: 5px;
     }
     .subtitle {
         text-align: center;
         color: #555;
-        font-size: 1.2em;
-        margin-bottom: 30px;
+        font-size: 1.5em;
+        margin-bottom: 25px;
     }
     .info-box {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -235,6 +237,82 @@ if test_file is not None:
                     "MCC": "{:.4f}",
                     "AUC": "{:.4f}"
                 }), use_container_width=True)
+                
+                # Interactive visualizations
+                st.markdown("---")
+                st.markdown('<h3 style="color: #27ae60; margin-top: 30px; margin-bottom: 20px;">Performance Metrics Visualization</h3>', unsafe_allow_html=True)
+                
+                # Create tabs for different metrics
+                tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["Accuracy", "Precision", "Recall", "F1 Score", "MCC", "AUC"])
+                
+                # Color palette for consistent styling
+                colors = px.colors.qualitative.Set2
+                
+                with tab1:
+                    fig_acc = px.bar(comparison_df, x='Model', y='Accuracy', 
+                                    title='Model Comparison - Accuracy',
+                                    color='Model', color_discrete_sequence=colors,
+                                    text='Accuracy')
+                    fig_acc.update_traces(texttemplate='%{text:.4f}', textposition='outside')
+                    fig_acc.update_layout(showlegend=False, yaxis_range=[0, 1], 
+                                         xaxis_title="Model", yaxis_title="Accuracy Score",
+                                         height=500)
+                    st.plotly_chart(fig_acc, use_container_width=True)
+                
+                with tab2:
+                    fig_prec = px.bar(comparison_df, x='Model', y='Precision', 
+                                     title='Model Comparison - Precision',
+                                     color='Model', color_discrete_sequence=colors,
+                                     text='Precision')
+                    fig_prec.update_traces(texttemplate='%{text:.4f}', textposition='outside')
+                    fig_prec.update_layout(showlegend=False, yaxis_range=[0, 1],
+                                          xaxis_title="Model", yaxis_title="Precision Score",
+                                          height=500)
+                    st.plotly_chart(fig_prec, use_container_width=True)
+                
+                with tab3:
+                    fig_rec = px.bar(comparison_df, x='Model', y='Recall', 
+                                    title='Model Comparison - Recall',
+                                    color='Model', color_discrete_sequence=colors,
+                                    text='Recall')
+                    fig_rec.update_traces(texttemplate='%{text:.4f}', textposition='outside')
+                    fig_rec.update_layout(showlegend=False, yaxis_range=[0, 1],
+                                         xaxis_title="Model", yaxis_title="Recall Score",
+                                         height=500)
+                    st.plotly_chart(fig_rec, use_container_width=True)
+                
+                with tab4:
+                    fig_f1 = px.bar(comparison_df, x='Model', y='F1 Score', 
+                                   title='Model Comparison - F1 Score',
+                                   color='Model', color_discrete_sequence=colors,
+                                   text='F1 Score')
+                    fig_f1.update_traces(texttemplate='%{text:.4f}', textposition='outside')
+                    fig_f1.update_layout(showlegend=False, yaxis_range=[0, 1],
+                                        xaxis_title="Model", yaxis_title="F1 Score",
+                                        height=500)
+                    st.plotly_chart(fig_f1, use_container_width=True)
+                
+                with tab5:
+                    fig_mcc = px.bar(comparison_df, x='Model', y='MCC', 
+                                    title="Model Comparison - Matthew's Correlation Coefficient",
+                                    color='Model', color_discrete_sequence=colors,
+                                    text='MCC')
+                    fig_mcc.update_traces(texttemplate='%{text:.4f}', textposition='outside')
+                    fig_mcc.update_layout(showlegend=False, yaxis_range=[-1, 1],
+                                         xaxis_title="Model", yaxis_title="MCC",
+                                         height=500)
+                    st.plotly_chart(fig_mcc, use_container_width=True)
+                
+                with tab6:
+                    fig_auc = px.bar(comparison_df, x='Model', y='AUC', 
+                                    title='Model Comparison - AUC (Area Under Curve)',
+                                    color='Model', color_discrete_sequence=colors,
+                                    text='AUC')
+                    fig_auc.update_traces(texttemplate='%{text:.4f}', textposition='outside')
+                    fig_auc.update_layout(showlegend=False, yaxis_range=[0, 1],
+                                         xaxis_title="Model", yaxis_title="AUC Score",
+                                         height=500)
+                    st.plotly_chart(fig_auc, use_container_width=True)
 
 
 
