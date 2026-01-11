@@ -8,13 +8,23 @@ import os
 from Models import logistic_regression, decision_tree, knn, naive_bayes, random_forest, xgboost_model
 
 # Set page config
-st.set_page_config(page_title="Machine Learning Assignment 2 - Classification Models Comparison", layout="wide")
+st.set_page_config(
+    page_title="Steel Plates Fault Classification", 
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
 
-st.title("Machine Learning Assignment 2 - Classification Models Comparison")
+# Title with styling
+st.markdown("""<h1 style='text-align: center; color: #1f77b4;'>🔬 Steel Plates Fault Classification</h1>""", unsafe_allow_html=True)
+st.markdown("""<h3 style='text-align: center; color: #555;'>Machine Learning Models Comparison</h3>""", unsafe_allow_html=True)
 st.markdown("""
-Welcome! This dashboard allows you to evaluate different machine learning models on the **Steel Plates Faults** dataset.
-The models are pre-trained on `steel_faults_train.csv` with optimized hyperparameters, and you can upload `steel_faults_test.csv` to see how they perform.
-""")
+<div style='background-color: #f0f2f6; padding: 20px; border-radius: 10px; margin-bottom: 20px;'>
+    <p style='font-size: 16px; color: #333;'>
+    👋 Welcome! This dashboard evaluates different machine learning models on the <b>Steel Plates Faults</b> dataset.
+    The models are pre-trained with optimized hyperparameters. Upload <code>steel_faults_test.csv</code> to see predictions and performance metrics.
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
 # --- Configuration ---
 TRAIN_DATA_PATH = "steel_faults_train.csv"  # Path to the training dataset
@@ -32,7 +42,7 @@ if train_df is None:
     st.error(f"Training data not found at `{TRAIN_DATA_PATH}`. Please add the file to the directory.")
     st.stop()
 
-st.success(f"Loaded Training Data: {train_df.shape[0]} rows, {train_df.shape[1]} columns")
+st.success(f"✅ Loaded Training Data: {train_df.shape[0]} rows, {train_df.shape[1]} columns")
 
 # Prepare Training Data
 target_col = train_df.columns[-1]
@@ -66,18 +76,18 @@ def load_models():
 
 with st.spinner("Loading pre-trained models..."):
     trained_models = load_models()
-    st.success("All pre-trained models loaded successfully!")
+    st.success("✅ All pre-trained models loaded successfully!")
 
 # --- Main Area ---
 
 # 4. Upload Test Data
-st.subheader("1. Upload Test Dataset")
+st.markdown("""<h2 style='color: #e377c2;'>📤 Step 1: Upload Test Dataset</h2>""", unsafe_allow_html=True)
 test_file = st.file_uploader("Upload your Test CSV file", type=["csv"])
 
 if test_file is not None:
     try:
         test_df = pd.read_csv(test_file)
-        st.write(f"Test Data Loaded: {test_df.shape[0]} rows")
+        st.write(f"✅ Test Data Loaded: {test_df.shape[0]} rows")
         
         if target_col not in test_df.columns:
             st.error(f"Target column `{target_col}` not found in test data. Please ensure the test data has the same structure as training data.")
@@ -87,12 +97,11 @@ if test_file is not None:
             y_test = test_df[target_col]
             
             # Ensure feature columns match
-            # (Simple check: number of columns. Ideally check names)
             if X_test.shape[1] != X_train.shape[1]:
                  st.warning(f"Feature mismatch! Train has {X_train.shape[1]} features, Test has {X_test.shape[1]}. Predictions might fail.")
 
             # 5. Select Model for Evaluation
-            st.subheader("2. Select Model to Evaluate")
+            st.markdown("""<h2 style='color: #8c564b;'>🤖 Step 2: Select Model to Evaluate</h2>""", unsafe_allow_html=True)
             selected_model_name = st.selectbox("Choose a model", list(trained_models.keys()))
             
             if selected_model_name:
@@ -100,7 +109,6 @@ if test_file is not None:
                 
                 # Predictions
                 y_pred = model.predict(X_test)
-                y_prob = model.predict_proba(X_test)[:, 1] if hasattr(model, "predict_proba") else None
                 
                 # Metrics
                 acc = accuracy_score(y_test, y_pred)
@@ -108,47 +116,54 @@ if test_file is not None:
                 rec = recall_score(y_test, y_pred, average='weighted', zero_division=0)
                 f1 = f1_score(y_test, y_pred, average='weighted', zero_division=0)
                 mcc = matthews_corrcoef(y_test, y_pred)
+                
+                # AUC for multi-class
                 try:
-                    auc = roc_auc_score(y_test, y_prob) if y_prob is not None else "N/A"
+                    if hasattr(model, "predict_proba"):
+                        y_prob = model.predict_proba(X_test)
+                        auc = roc_auc_score(y_test, y_prob, multi_class='ovr', average='weighted')
+                    else:
+                        auc = 0.0
                 except:
-                    auc = "N/A"
+                    auc = 0.0
 
-                st.markdown(f"### Results for **{selected_model_name}**")
+                st.markdown(f"""<h2 style='color: #1f77b4;'>📊 Results for <span style='color: #ff7f0e;'>{selected_model_name}</span></h2>""", unsafe_allow_html=True)
                 st.markdown("---")
 
-                # Metrics Row
-                st.markdown("#### Key Performance Indicators")
+                # Metrics Row with icons
+                st.markdown("""<h3 style='color: #2ca02c;'>📈 Key Performance Indicators</h3>""", unsafe_allow_html=True)
                 cols = st.columns(6)
                 metrics = [
-                    ("Accuracy", acc), ("Precision", prec), ("Recall", rec),
-                    ("F1 Score", f1), ("MCC", mcc), ("AUC", auc)
+                    ("🎯 Accuracy", acc), ("✓ Precision", prec), ("↩ Recall", rec),
+                    ("⚖ F1 Score", f1), ("📉 MCC", mcc), ("📊 AUC", auc)
                 ]
                 
                 for col, (label, value) in zip(cols, metrics):
-                    val_str = f"{value:.4f}" if isinstance(value, (int, float)) else value
+                    val_str = f"{value:.4f}" if isinstance(value, (int, float)) else str(value)
                     col.metric(label, val_str)
                 
                 st.markdown("---")
 
                 # Visualizations
-                st.markdown("#### Confusion Matrix")
+                st.markdown("""<h3 style='color: #d62728;'>🔥 Confusion Matrix</h3>""", unsafe_allow_html=True)
                 cm = confusion_matrix(y_test, y_pred)
-                fig, ax = plt.subplots(figsize=(6, 4))
-                sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax, cbar=False)
-                ax.set_xlabel('Predicted Label')
-                ax.set_ylabel('True Label')
+                fig, ax = plt.subplots(figsize=(8, 6))
+                sns.heatmap(cm, annot=True, fmt='d', cmap='RdYlGn_r', ax=ax, cbar=True, 
+                           linewidths=1, linecolor='white')
+                ax.set_xlabel('Predicted Label', fontsize=12, fontweight='bold')
+                ax.set_ylabel('True Label', fontsize=12, fontweight='bold')
+                ax.set_title(f'{selected_model_name} - Confusion Matrix', fontsize=14, fontweight='bold', pad=20)
                 plt.tight_layout()
-                st.pyplot(fig, use_container_width=False)
+                st.pyplot(fig, use_container_width=True)
                 
                 st.markdown("---")
                 
-                st.markdown("#### Model Comparison")
+                st.markdown("""<h3 style='color: #9467bd;'>🏆 Model Comparison Across All Algorithms</h3>""", unsafe_allow_html=True)
                 
                 comparison_results = []
                 for name, clf in trained_models.items():
                     # Predict
                     y_p = clf.predict(X_test)
-                    y_pb = clf.predict_proba(X_test)[:, 1] if hasattr(clf, "predict_proba") else None
                     
                     # Metrics
                     a = accuracy_score(y_test, y_p)
@@ -156,10 +171,16 @@ if test_file is not None:
                     r = recall_score(y_test, y_p, average='weighted', zero_division=0)
                     f = f1_score(y_test, y_p, average='weighted', zero_division=0)
                     m = matthews_corrcoef(y_test, y_p)
+                    
+                    # AUC for multi-class
                     try:
-                        au = roc_auc_score(y_test, y_pb) if y_pb is not None else 0
+                        if hasattr(clf, "predict_proba"):
+                            y_pb = clf.predict_proba(X_test)
+                            au = roc_auc_score(y_test, y_pb, multi_class='ovr', average='weighted')
+                        else:
+                            au = 0.0
                     except:
-                        au = 0
+                        au = 0.0
                     
                     comparison_results.append({
                         "Model": name,
@@ -184,7 +205,11 @@ if test_file is not None:
 
 
     except Exception as e:
-        st.error(f"Error processing test file: {e}")
+        st.error(f"❌ Error processing test file: {e}")
 else:
-    st.info("Please upload a CSV file to evaluate the models. (Use the GitHub link to download the test dataset)")
+    st.markdown("""
+    <div style='background-color: #fff3cd; padding: 15px; border-left: 5px solid #ffc107; border-radius: 5px;'>
+        <p style='margin: 0; color: #856404;'><b>ℹ️ Info:</b> Please upload a CSV file to evaluate the models.</p>
+    </div>
+    """, unsafe_allow_html=True)
 
