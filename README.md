@@ -18,12 +18,12 @@ The features describe things like geometric properties, luminosity values, and s
 
 I implemented 6 different classifiers with feature scaling and RandomizedSearchCV for hyperparameter optimization:
 
-1. **Logistic Regression** - Linear model with L2 regularization (max_iter=100,000)
-2. **Decision Tree** - Tree-based classifier with entropy criterion
-3. **K-Nearest Neighbors** - Distance-based learning with feature scaling
-4. **Naive Bayes** - Gaussian probabilistic classifier
-5. **Random Forest** - Ensemble of 458 decision trees without bootstrap
-6. **XGBoost** - Gradient boosting with extensive regularization tuning
+1. **Logistic Regression** - Linear model with L2 regularization (max_iter=20,000, C=42.99, solver=lbfgs)
+2. **Decision Tree** - Entropy-based classifier (max_depth=19, min_samples_split=11, min_samples_leaf=5)
+3. **K-Nearest Neighbors** - Distance-weighted learning with feature scaling (k=6, ball_tree algorithm, Minkowski p=3)
+4. **Naive Bayes** - Gaussian probabilistic classifier with smoothing (var_smoothing=7.70e-06)
+5. **Random Forest** - Ensemble of 210 decision trees (max_depth=30, no bootstrap, balanced_subsample weighting)
+6. **XGBoost** - Gradient boosting (159 estimators, max_depth=8, learning_rate=0.27, colsample=0.99)
 
 ## Results on Test Set
 
@@ -40,19 +40,19 @@ Here's how each model performed on the test data:
 
 ## Observations
 
-**Random Forest** achieved the best performance with 80.72% accuracy. The hyperparameter search found that 458 trees without bootstrap sampling was optimal for this dataset. This ensemble approach effectively handles the 7-class problem.
+**Random Forest** achieved the best performance with 82.52% accuracy. The hyperparameter search found that 210 trees with max_depth=30 and balanced_subsample class weighting (without bootstrap) was optimal for this dataset. This ensemble approach effectively handles the 7-class problem with superior generalization.
 
-**XGBoost** came in second with 78.66% accuracy and the highest AUC at 0.9447. The key was tuning parameters like colsample_bytree (0.808), gamma (0.147), and the regularization terms (reg_alpha, reg_lambda). These prevent overfitting while maintaining good performance.
+**XGBoost** came in second with 78.41% accuracy and excellent AUC at 0.9469. The key was tuning parameters like colsample_bytree (0.995), learning_rate (0.274), and 159 estimators with max_depth=8. The regularization terms (reg_alpha=0.305, reg_lambda=1.417) prevent overfitting while maintaining strong performance.
 
-**KNN** performed well at 72.24% accuracy. The optimal configuration was k=3 neighbors with distance weighting and the ball_tree algorithm. Feature scaling with StandardScaler was essential for this distance-based method to work properly.
+**KNN** performed well at 74.81% accuracy. The optimal configuration was k=6 neighbors with distance weighting, ball_tree algorithm, and Minkowski metric (p=3). Feature scaling with StandardScaler was essential for this distance-based method to work properly.
 
-**Logistic Regression** reached 71.47% accuracy. The model benefited significantly from feature scaling and a higher regularization parameter (C=73.2). The lbfgs solver worked best for this multi-class problem.
+**Decision Tree** reached 73.78% accuracy with a moderately deep tree (max_depth=19), min_samples_split=11, and min_samples_leaf=5. The entropy criterion outperformed gini for splitting decisions in this multi-class scenario.
 
-**Decision Tree** also achieved 71.47% accuracy with a deeper tree (max_depth=45) and larger leaf nodes (min_samples_leaf=9). The entropy criterion outperformed gini for splitting decisions.
+**Logistic Regression** achieved 71.47% accuracy. The model benefited from feature scaling and a moderate regularization parameter (C=42.99). The lbfgs solver with max_iter=20,000 worked best for this multi-class problem.
 
-**Naive Bayes** was the weakest at 63.75% accuracy, though it still has decent AUC (0.8887) for probability estimates. The Gaussian assumption doesn't capture all the complexity in this dataset's feature relationships.
+**Naive Bayes** was the weakest at 63.75% accuracy, though it still has decent AUC (0.8887) for probability estimates. The Gaussian assumption with var_smoothing=7.70e-06 doesn't fully capture the complexity in this dataset's feature relationships.
 
-Feature scaling proved critical for distance-based and gradient-based algorithms. StandardScaler preprocessing was applied to Logistic Regression, KNN, Naive Bayes, and XGBoost through sklearn pipelines.
+Feature scaling proved critical for distance-based and gradient-based algorithms. StandardScaler preprocessing was applied to Logistic Regression, KNN, Naive Bayes, and XGBoost through sklearn pipelines. All models were trained using RandomizedSearchCV with 500 iterations and random_state=99 for reproducibility.
 
 ## How to Run
 
