@@ -124,7 +124,7 @@ st.markdown("""
 <div style='background-color: #e8f4fd; padding: 15px; border-left: 5px solid #2196F3; border-radius: 5px; margin-bottom: 15px;'>
     <p style='margin: 0; color: #1565C0; font-size: 15px;'>
         You can download the test dataset here: 
-        <a href="https://raw.githubusercontent.com/2025AB05088/ML_Assignment_2/main/steel_faults_test.csv" download style="color: #0d47a1; text-decoration: underline;">
+        <a href="https://github.com/2025AB05088/ML_Assignment_2/tree/main" download style="color: #0d47a1; text-decoration: underline;">
             steel_faults_test.csv
         </a>
     </p>
