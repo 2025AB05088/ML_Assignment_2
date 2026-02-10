@@ -119,17 +119,26 @@ with st.spinner("Loading pre-trained models..."):
 # Upload Test Data
 st.markdown('<h2 class="section-header">Step 1: Upload Test Dataset</h2>', unsafe_allow_html=True)
 
-# Download link for test dataset
-st.markdown("""
-<div style='background-color: #e8f4fd; padding: 15px; border-left: 5px solid #2196F3; border-radius: 5px; margin-bottom: 15px;'>
-    <p style='margin: 0; color: #1565C0; font-size: 15px;'>
-        You can download the test dataset here: 
-        <a href="https://raw.githubusercontent.com/2025AB05088/ML_Assignment_2/main/steel_faults_test.csv" download style="color: #0d47a1; text-decoration: underline;">
-            steel_faults_test.csv
-        </a>
-    </p>
-</div>
-""", unsafe_allow_html=True)
+# Download button for test dataset
+@st.cache_data
+def fetch_test_csv():
+    import requests
+    url = "https://raw.githubusercontent.com/2025AB05088/ML_Assignment_2/main/steel_faults_test.csv"
+    response = requests.get(url)
+    response.raise_for_status()
+    return response.content
+
+try:
+    test_csv_data = fetch_test_csv()
+    st.markdown("You can download the test dataset here:")
+    st.download_button(
+        label="Download steel_faults_test.csv",
+        data=test_csv_data,
+        file_name="steel_faults_test.csv",
+        mime="text/csv"
+    )
+except Exception:
+    st.info("Could not fetch the test dataset from GitHub. Please download it manually from: https://github.com/2025AB05088/ML_Assignment_2/blob/main/steel_faults_test.csv")
 
 test_file = st.file_uploader("Upload your Test CSV file", type=["csv"])
 
