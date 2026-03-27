@@ -1,7 +1,5 @@
 # Steel Plates Fault Classification Pipeline (Enterprise QA)
 
-![Enterprise QA Dashboard](C:\Users\adith\.gemini\antigravity\brain\b8f5609c-bfd1-4b64-b751-98755bc1baa2\steel_manufacturing_qa_1774631482342.png)
-
 ## Overview
 
 Welcome to the automated Quality Assurance (QA) pipeline for steel manufacturing. This enterprise-grade infrastructure leverages advanced machine learning to detect, classify, and isolate surface defects in steel plate production in real-time. By transitioning from manual inspection to an ML-driven approach, we aim to reduce false positives, increase throughput, and ensure the highest grade of materials reach our clients.
